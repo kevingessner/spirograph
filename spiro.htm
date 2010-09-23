@@ -18,30 +18,38 @@
                 });
                 var R = Number(options['R']) || 100,
                     r = Number(options['r']) || 33,
-                    d = Number(options['d']) || 105;
+                    d = Number(options['d']) || 105,
+                    colors = [Number(options['c1']) || 50, Number(options['c2']) || 300];
 
                 var fxnX = function(t) {
-                    return (R - r) * Math.cos(t) + d * Math.cos((R - r) * t / r) + W / 2;
+                    return (R - r) * Math.cos(t) + d * Math.cos((R - r) * t / r);
                 };
                 var fxnY = function(t) {
-                    return (R - r) * Math.sin(t) - d * Math.sin((R - r) * t / r) + H / 2;
+                    return (R - r) * Math.sin(t) - d * Math.sin((R - r) * t / r);
                 };
 
                 var fxnUpdate = function() {
-                    window.location.hash = 'R=' + R + '&r=' + r + '&d=' + d;
+                    window.location.hash = 'R=' + R + '&r=' + r + '&d=' + d + '&c1=' + colors[0] + '&c2=' + colors[1];
 
                     ctx.clearRect(0, 0, W, H);
-                    ctx.beginPath();
                     var t = 0,
                         x = fxnX(t),
-                        y = fxnY(t);
-                    ctx.moveTo(x, y);
+                        y = fxnY(t),
+                        gradient = ctx.createRadialGradient(W / 2, H / 2, r, W / 2, H / 2, R);
+                    gradient.addColorStop(0, 'hsl(' + colors[0] + ', 100%, 50%)');
+                    gradient.addColorStop(1, 'hsl(' + colors[1] + ', 100%, 50%)');
+                    ctx.strokeStyle = gradient;
+
+                    ctx.beginPath();
+                    ctx.moveTo(x + W / 2, y + H / 2);
                     do
                     {
                         t += 0.05;
                         x = fxnX(t);
                         y = fxnY(t);
-                        ctx.lineTo(x, y);
+                        //var radius = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+                        //ctx.lineWidth = radius / 100;
+                        ctx.lineTo(x + W / 2, y + H / 2);
                     } while (t < 150);
                     ctx.stroke();
                 };
@@ -70,9 +78,18 @@
                         d = ui.value;
                         fxnUpdate();
                     },
-                    min: 1,
+                    min: 20,
                     max: 175,
                     value: d
+                }); 
+                $('#color-slider').slider({
+                    slide: function(e, ui) {
+                        colors = ui.values;
+                        fxnUpdate();
+                    },
+                    min: 0,
+                    max: 360,
+                    values: colors
                 });
             });
         </script>
@@ -90,14 +107,15 @@
             .val
             {
                 display: inline-block;
-                width: 3em;
+                width: 5em;
             }
         </style>
     </head>
     <body>
         <canvas id="canvas" width="600" height="600"></canvas>
-        <div>R: <span class="val"></span><span id="R-slider" class="slider"></span></div>
-        <div>r: <span class="val"></span><span id="r-slider" class="slider"></span></div>
-        <div>d: <span class="val"></span><span id="d-slider" class="slider"></span></div>
+        <div><label class="val">R: </label><span id="R-slider" class="slider"></span></div>
+        <div><label class="val">r: </label><span id="r-slider" class="slider"></span></div>
+        <div><label class="val">d: </label><span id="d-slider" class="slider"></span></div>
+        <div><label class="val">color: </label><span id="color-slider" class="slider"></span></div>
     </body>
 </html>
