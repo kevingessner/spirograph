@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.3/themes/base/jquery-ui.css" />
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.4/jquery-ui.js"></script>
+        <script type="text/javascript">
+            $(function() {
+
+                var ctx = $('#canvas')[0].getContext('2d');
+                var W = 600, H = 600;
+                var options = {}, hash = window.location.hash;
+                if (hash[0] == '#') hash = hash.substring(1);
+                $.each(hash.split('&'), function(ix, el) {
+                    var parts = el.split('=');
+                    if (parts.length != 2) return true;
+                    options[parts[0]] = parts[1];
+                });
+                var R = Number(options['R']) || 100,
+                    r = Number(options['r']) || 33,
+                    d = Number(options['d']) || 105;
+
+                var fxnX = function(t) {
+                    return (R - r) * Math.cos(t) + d * Math.cos((R - r) * t / r) + W / 2;
+                };
+                var fxnY = function(t) {
+                    return (R - r) * Math.sin(t) - d * Math.sin((R - r) * t / r) + H / 2;
+                };
+
+                var fxnUpdate = function() {
+                    window.location.hash = 'R=' + R + '&r=' + r + '&d=' + d;
+
+                    ctx.clearRect(0, 0, W, H);
+                    ctx.beginPath();
+                    var t = 0,
+                        x = fxnX(t),
+                        y = fxnY(t);
+                    ctx.moveTo(x, y);
+                    do
+                    {
+                        t += 0.05;
+                        x = fxnX(t);
+                        y = fxnY(t);
+                        ctx.lineTo(x, y);
+                    } while (t < 150);
+                    ctx.stroke();
+                };
+                fxnUpdate();
+
+                $('#R-slider').slider({
+                    slide: function(e, ui) {
+                        R = ui.value;
+                        fxnUpdate();
+                    },
+                    min: 10,
+                    max: 150,
+                    value: R
+                });
+                $('#r-slider').slider({
+                    slide: function(e, ui) {
+                        r = ui.value;
+                        fxnUpdate();
+                    },
+                    min: 25,
+                    max: 175,
+                    value: r
+                });
+                $('#d-slider').slider({
+                    slide: function(e, ui) {
+                        d = ui.value;
+                        fxnUpdate();
+                    },
+                    min: 1,
+                    max: 175,
+                    value: d
+                });
+            });
+        </script>
+        <style type="text/css">
+            body
+            {
+                font-family: monospace;
+                line-height: 2.6;
+            }
+            .slider
+            {
+                display: inline-block;
+                width: 400px;
+            }
+            .val
+            {
+                display: inline-block;
+                width: 3em;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas" width="600" height="600"></canvas>
+        <div>R: <span class="val"></span><span id="R-slider" class="slider"></span></div>
+        <div>r: <span class="val"></span><span id="r-slider" class="slider"></span></div>
+        <div>d: <span class="val"></span><span id="d-slider" class="slider"></span></div>
+    </body>
+</html>
